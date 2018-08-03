@@ -52,4 +52,4 @@ You can also choose a specific iTerm profile with `PROFILE` and name
 your terms with the `title()` function.
 
 
-# vim: set tw=72:
+<!-- vim: set tw=72: -->
