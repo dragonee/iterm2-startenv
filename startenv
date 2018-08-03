@@ -1,0 +1,13 @@
+#!/bin/bash
+
+DIR=$(dirname "$(realpath "$0")")
+HOME_DIR=~/.startenv
+
+SCRIPT="$HOME_DIR/$1.js"
+
+if [ ! -f "$SCRIPT" ]; then
+    echo "$SCRIPT does not exist. Exiting..."
+    exit 1
+fi
+
+osascript -l JavaScript  "$DIR/Run.applescript" "$SCRIPT" "$2"
