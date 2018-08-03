@@ -43,10 +43,10 @@ PATH = '/Users/MYUSERNAME/some/path/to/project'
 and type `startenv myenv`. It will tell iTerm to open three new tabs.
 Each one will:
 
-[x] open the `PATH` directory, 
-[x] execute all lines `ALLTERMS` as terminal commands,
-[x] execute a line in `TERMS` in each terminal tab (multiple commands if array is passed),
-[x] switch back to the first tab.
+- [x] open the `PATH` directory, 
+- [x] execute all lines `ALLTERMS` as terminal commands,
+- [x] execute a line in `TERMS` in each terminal tab (multiple commands if array is passed),
+- [x] switch back to the first tab.
 
 You can also choose a specific iTerm profile with `PROFILE` and name
 your terms with the `title()` function.
