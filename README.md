@@ -32,7 +32,7 @@ ALLTERMS = [
 ]
 
 TERMS = [
-	[title("hello world"), 'git status'],
+    [title("hello world"), 'git status'],
     'php -S localhost:8000 -t public/',
     'npm run watch',
 ]
