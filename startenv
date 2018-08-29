@@ -3,6 +3,14 @@
 DIR=$(dirname "$(realpath "$0")")
 HOME_DIR=~/.startenv
 
+if [ $# -eq 0 ]; then
+    for i in $HOME_DIR/*.js; do
+        echo "$(basename "$i" .js)"
+    done
+
+    exit 0
+fi
+
 SCRIPT="$HOME_DIR/$1.js"
 
 if [ ! -f "$SCRIPT" ]; then
