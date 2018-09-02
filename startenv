@@ -3,18 +3,61 @@
 DIR=$(dirname "$(realpath "$0")")
 HOME_DIR=~/.startenv
 
+if [ "$1" == "init" ]; then
+    if [ -z "$2" ]; then
+        echo "Error: you need to specify project name as a second argument."
+        exit 1
+    fi
+
+    PROJECT_NAME=`basename "$2"`
+
+    if [ $# -gt 2 ]; then
+        echo "Warning: extra arguments at the command line."
+    fi
+
+    if [ ! -d "$HOME_DIR" ]; then
+        mkdir "$HOME_DIR"
+
+        if [ $? != 0 ]; then
+            echo "Error: couldn't create $HOME_DIR directory." 
+            echo "Make sure your permissions are ok."
+            exit 1
+        fi
+    fi
+
+    sed "s/PROJECT_NAME/$PROJECT_NAME/g" "$DIR/examples/fullexample.js" > "$HOME_DIR/$PROJECT_NAME.js"
+
+    echo "Created $HOME_DIR/$PROJECT_NAME.js"
+    echo "Make necessary edits in the file and start the environment with:"
+    echo ""
+    echo "startenv $PROJECT_NAME"
+
+    exit 0
+fi
+
+if [ ! -d "$HOME_DIR" ]; then
+    echo "The $HOME_DIR directory does not exist."
+    echo "To create your first environment, type the following in your terminal:"
+    echo ""
+    echo "startenv init PROJECT_NAME"
+    exit 1
+fi
+
 if [ $# -eq 0 ]; then
     for i in $HOME_DIR/*.js; do
         echo "$(basename "$i" .js)"
     done
 
     exit 0
+elif [ $# -gt 2 ]; then
+    echo "Warning: extra arguments at the command line."
 fi
 
-SCRIPT="$HOME_DIR/$1.js"
+PROJECT_NAME=`basename "$1"`
+SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
 
 if [ ! -f "$SCRIPT" ]; then
-    echo "$SCRIPT does not exist. Exiting..."
+    echo "Error: $SCRIPT does not exist. Exiting..."
     exit 1
 fi
 

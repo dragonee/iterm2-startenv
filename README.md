@@ -1,18 +1,27 @@
 # Setup your programming environment with iTerm2
 
-Quickstart
+This package lets you open multiple terminal tabs all at once and
+execute commands to quickly bring up your programming environment for a
+specific project.
+
+## Quickstart
 
 ```
-mkdir ~/.startenv
-cp examples/django+webpack.js ~/.startenv
-
-# ...edit the file
+# Install the package
 
 ln -s `pwd`/startenv /usr/local/bin/startenv # if using Homebrew
 sudo ln -s `pwd`/startenv /usr/bin/startenv # otherwise
 
-startenv django+webpack.js
+# Creating your first environment
+
+startenv init hello
+
+# ...edit ~/.startenv/hello.js
+
+startenv hello
 ```
+
+## Description
 
 When working with Web projects you often end up using multiple building
 tools that need to run in the background. For example, `npm run watch`
@@ -51,5 +60,15 @@ Each one will:
 You can also choose a specific iTerm profile with `PROFILE` and name
 your terms with the `title()` function.
 
+## Examples
+
+- [Example with comments](examples/fullexample.js)
+- [Django+webpack starter](examples/django+webpack.js)
+
+## TODO
+
+- [ ] Expand user name in PATH.
+- [ ] Add package to Homebrew repositories to make installation simple.
+- [ ] Add more examples.
 
 <!-- vim: set tw=72: -->
