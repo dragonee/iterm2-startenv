@@ -9,6 +9,9 @@ specific project.
 ```
 # Install the package
 
+git clone https://github.com/dragonee/iterm2-startenv.git
+cd iterm2-startenv
+
 ln -s `pwd`/startenv /usr/local/bin/startenv # if using Homebrew
 sudo ln -s `pwd`/startenv /usr/bin/startenv # otherwise
 
