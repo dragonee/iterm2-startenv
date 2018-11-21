@@ -3,6 +3,32 @@
 DIR=$(dirname "$(realpath "$0")")
 HOME_DIR=~/.startenv
 
+STARTENVJS=startenv.js
+
+# return value
+__=""
+
+find_file_upwards () {
+    dir_to_check=${2:-`pwd`}
+    file_to_find="$1"
+
+    while [ "$dir_to_check" != "/" ]; do
+
+        if [ -f "$dir_to_check/$file_to_find" ]; then
+            __="$dir_to_check/$file_to_find"
+            return
+        fi
+
+        dir_to_check=`dirname "$dir_to_check"`
+   done
+}
+
+list_command() {
+    for i in $HOME_DIR/*.js; do
+        echo "$1$(basename "$i" .js)"
+    done
+}
+
 if [ "$1" == "init" ]; then
     if [ -z "$2" ]; then
         echo "Error: you need to specify project name as a second argument."
@@ -33,6 +59,10 @@ if [ "$1" == "init" ]; then
     echo "startenv $PROJECT_NAME"
 
     exit 0
+elif [ "$1" == "list" ]; then
+    list_command
+
+    exit 0
 fi
 
 if [ ! -d "$HOME_DIR" ]; then
@@ -44,16 +74,41 @@ if [ ! -d "$HOME_DIR" ]; then
 fi
 
 if [ $# -eq 0 ]; then
-    for i in $HOME_DIR/*.js; do
-        echo "$(basename "$i" .js)"
-    done
+    find_file_upwards "$STARTENVJS"
 
-    exit 0
-elif [ $# -gt 2 ]; then
+    if [ ! -f "$__" ]; then
+        echo "Usage: startenv PROJECT_NAME"
+        echo "Available environments:"
+
+        list_command "   "
+
+        echo "Fatal: did not find $STARTENVJS here (or any of the parent directories)."
+        exit 1
+    fi
+
+    SCRIPT="$__"
+
+    project_dir=`dirname "$SCRIPT"`
+    PROJECT_NAME=`basename "$project_dir"`
+
+    symlink_target="$HOME_DIR/$PROJECT_NAME.js"
+
+    if [ ! -f "$symlink_target" ]; then
+        echo "Linking as $HOME_DIR/$PROJECT_NAME.js"
+        echo "Next time you will be able to use the following command"
+        echo ""
+        echo "startenv $PROJECT_NAME"
+
+        ln -s "$SCRIPT" "$symlink_target"
+    fi
+else
+    PROJECT_NAME=`basename "$1"`
+fi
+
+if [ $# -gt 2 ]; then
     echo "Warning: extra arguments at the command line."
 fi
 
-PROJECT_NAME=`basename "$1"`
 SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
 
 if [ ! -f "$SCRIPT" ]; then
