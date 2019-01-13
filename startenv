@@ -8,6 +8,8 @@ STARTENVJS=startenv.js
 # return value
 __=""
 
+# find a specfic file in directory or any of their parents
+# find_file_upwards FILE PATH=`pwd`
 find_file_upwards () {
     dir_to_check=${2:-`pwd`}
     file_to_find="$1"
@@ -23,6 +25,9 @@ find_file_upwards () {
    done
 }
 
+# print output of list command
+# used in `startenv list` and usage message
+# list_command [PADDING]
 list_command() {
     for i in $HOME_DIR/*.js; do
         echo "$1$(basename "$i" .js)"
@@ -117,3 +122,5 @@ if [ ! -f "$SCRIPT" ]; then
 fi
 
 osascript -l JavaScript  "$DIR/Run.applescript" "$SCRIPT" "$2"
+
+# vim: set tw=78:
