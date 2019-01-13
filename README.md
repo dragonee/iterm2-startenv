@@ -43,7 +43,7 @@ by managing iTerm via Apple Javascript for Automation.
 
 Simply go to your project directory and `startenv init`:
 
-```
+```javascript
 ALLTERMS = [
     'nvm use 10',
 ]
