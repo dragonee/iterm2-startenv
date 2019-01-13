@@ -69,6 +69,8 @@ your terms with the `title()` function.
 What's more, all your `startenv`ed projects are symlinked in
 `~/.startenv`, so you can run the command from any directory whatsoever:
 
+## Usage
+
 ```
 dragonee@lain ~ $ startenv hello
 ```
@@ -97,6 +99,8 @@ Open a number of terminal tabs with configurable commands.
 If run in project directory it will look upwards (like Git) for a file
 named `.startenv.js`. If it exists, it will run it and open a number of
 terminal tabs with configurable commands.
+
+If run outside of project directory, it prints out output of `startenv list`.
 
 ## Examples
 
