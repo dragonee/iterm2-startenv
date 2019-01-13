@@ -41,7 +41,8 @@ bunch of profiles for every project you are in and your iTerm profile
 panel will fill up very quickly. This package addresses this problem
 by managing iTerm via Apple Javascript for Automation.
 
-Simply go to your project directory and `startenv init`:
+Simply go to your project directory (for now let's assume it's named `hello`) 
+and `startenv init`. Edit the `.startenv.js` file to:
 
 ```javascript
 ALLTERMS = [
