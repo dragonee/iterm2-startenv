@@ -69,14 +69,14 @@ your terms with the `title()` function.
 What's more, all your `startenv`ed projects are symlinked in
 `~/.startenv`, so you can run the command from any directory whatsoever:
 
-## Usage
-
 ```
 dragonee@lain ~ $ startenv hello
 ```
 
 The above command will still open three terminal tabs in your project
 directory.
+
+## Usage
 
 ### `startenv init [NAME]`
 
