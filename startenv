@@ -3,14 +3,130 @@
 DIR=$(dirname "$(realpath "$0")")
 HOME_DIR=~/.startenv
 
-if [ "$1" == "init" ]; then
-    if [ -z "$2" ]; then
-        echo "Error: you need to specify project name as a second argument."
+STARTENVJS=.startenv.js
+
+# return value
+__=""
+
+# find a specfic file in directory or any of their parents
+# find_file_upwards FILE PATH=`pwd`
+find_file_upwards () {
+    dir_to_check=${2:-`pwd`}
+    file_to_find="$1"
+
+    while [ "$dir_to_check" != "/" ]; do
+
+        if [ -f "$dir_to_check/$file_to_find" ]; then
+            __="$dir_to_check/$file_to_find"
+            return
+        fi
+
+        dir_to_check=`dirname "$dir_to_check"`
+   done
+}
+
+# print output of list command
+# used in `startenv list` and usage message
+# list_command [PADDING]
+list_command() {
+    for i in $HOME_DIR/*.js; do
+        echo "$1$(basename "$i" .js)"
+    done
+}
+
+link_file_in_home() {
+    local force=0
+
+    while getopts 'f' opt; do
+        case $opt in
+            f) force=1 ;;
+            *) echo 'Error in command line parsing' >&2
+               exit 1
+        esac
+    done
+
+    shift "$(( OPTIND - 1 ))"
+
+    local destination="$1"
+    local project_name="$2"
+
+    # do we need to make a link?
+    if [ "$force" -eq 0 ]; then
+        if [ -f "$HOME_DIR/$project_name.js" ]; then
+            __="$project_name"
+            return 0
+        fi
+
+        for file in "$HOME_DIR"/*; do
+            if [ ! -L "$file" ]; then
+                continue
+            fi
+
+            path=`readlink $file`
+
+            if [ "$path" = "$destination" ]; then
+                __=$(basename "$file" .js)
+
+                echo "Found a link under project name $__."
+                echo "You can use startenv $__ to start the project from anywhere."
+                echo "(startenv init to relink the project)"
+
+                return 0
+            fi
+        done
+    fi
+
+    echo "Linking as $HOME_DIR/$project_name.js"
+
+    for file in "$HOME_DIR"/*; do
+        if [ ! -L "$file" ]; then
+            continue
+        fi
+
+        path=`readlink $file`
+        
+        if [ "$path" = "$destination" ]; then
+            rm -f "$file"
+        fi
+    done
+    
+    if [ -f "$HOME_DIR/$project_name.js" ]; then
+        echo "Error: $HOME_DIR/$project_name.js is not a symlink!"
+        echo "It probably was created manually and will not be overwritten."
+        echo "To fix this behaviour, manually remove this file and rerun the command."
+
         exit 1
     fi
 
-    PROJECT_NAME=`basename "$2"`
+    ln -s "$destination" "$HOME_DIR/$project_name.js"
 
+    __="$project_name"
+}
+
+# initialize repository
+# if startenv.js file is found in directory, relink path forcefully
+init_command() {
+    INIT_PATH=${1:-`pwd`}
+
+    PROJECT_NAME=${2:-$(basename "$INIT_PATH")}
+
+    STARTENV_PATH="$INIT_PATH/$STARTENVJS"
+
+    if [ ! -f "$STARTENV_PATH" ]; then
+        sed "s/PROJECT_NAME/$PROJECT_NAME/g" "$DIR/examples/fullexample.js" > "$STARTENV_PATH"
+        echo "Created $STARTENV_PATH"
+    else
+        echo "$STARTENVJS file exists, skipping file creation..."
+    fi
+    
+    link_file_in_home -f "$STARTENV_PATH" "$PROJECT_NAME"
+    
+    echo "Make necessary edits in the file and start the environment with:"
+    echo ""
+    echo "startenv (startenv $PROJECT_NAME from anywhere)"
+}
+
+if [ "$1" == "init" ]; then
     if [ $# -gt 2 ]; then
         echo "Warning: extra arguments at the command line."
     fi
@@ -24,13 +140,12 @@ if [ "$1" == "init" ]; then
             exit 1
         fi
     fi
+    
+    init_command "$(pwd)" "$2"
 
-    sed "s/PROJECT_NAME/$PROJECT_NAME/g" "$DIR/examples/fullexample.js" > "$HOME_DIR/$PROJECT_NAME.js"
-
-    echo "Created $HOME_DIR/$PROJECT_NAME.js"
-    echo "Make necessary edits in the file and start the environment with:"
-    echo ""
-    echo "startenv $PROJECT_NAME"
+    exit 0
+elif [ "$1" == "list" ]; then
+    list_command
 
     exit 0
 fi
@@ -39,22 +154,40 @@ if [ ! -d "$HOME_DIR" ]; then
     echo "The $HOME_DIR directory does not exist."
     echo "To create your first environment, type the following in your terminal:"
     echo ""
-    echo "startenv init PROJECT_NAME"
+    echo "startenv init [PROJECT_NAME]"
     exit 1
 fi
 
 if [ $# -eq 0 ]; then
-    for i in $HOME_DIR/*.js; do
-        echo "$(basename "$i" .js)"
-    done
+    find_file_upwards "$STARTENVJS"
 
-    exit 0
-elif [ $# -gt 2 ]; then
-    echo "Warning: extra arguments at the command line."
+    if [ ! -f "$__" ]; then
+        echo "Usage: startenv PROJECT_NAME"
+        echo "Available environments:"
+
+        list_command "   "
+
+        echo "Fatal: did not find $STARTENVJS here (or any of the parent directories)."
+        echo "Did you mean startenv init?"
+        exit 1
+    fi
+
+    SCRIPT="$__"
+    PROJECT_NAME=$(basename `dirname "$SCRIPT"`)
+
+    link_file_in_home "$SCRIPT" "$PROJECT_NAME"
+else
+    PROJECT_NAME=`basename "$1"`
+    SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
+
+    if [ -L "$SCRIPT" ]; then
+        SCRIPT="$(readlink $SCRIPT)"
+    fi
 fi
 
-PROJECT_NAME=`basename "$1"`
-SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
+if [ $# -gt 2 ]; then
+    echo "Warning: extra arguments at the command line."
+fi
 
 if [ ! -f "$SCRIPT" ]; then
     echo "Error: $SCRIPT does not exist. Exiting..."
@@ -62,3 +195,5 @@ if [ ! -f "$SCRIPT" ]; then
 fi
 
 osascript -l JavaScript  "$DIR/Run.applescript" "$SCRIPT" "$2"
+
+# vim: set tw=78:

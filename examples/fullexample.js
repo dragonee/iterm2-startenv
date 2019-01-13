@@ -13,13 +13,6 @@
  */
 
 /*
- * Change working directory to this directory.
- *
- * Use only absolute names, ~/Code will not work here.
- */
-PATH = '/Users/MYUSERNAME/some/path/to/project'
-
-/*
  * Run with a specific iTerm profile.
  *
  * If you have a specific profile that determines your tab behaviour for

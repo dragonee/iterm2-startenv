@@ -9,5 +9,3 @@ TERMS = [
     'npm run watch',
 ]
 
-PATH = '/Users/MYUSERNAME/some/path/to/project'
-
