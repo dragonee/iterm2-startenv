@@ -6,7 +6,7 @@ specific project.
 
 ## Quickstart
 
-```
+```bash
 # Install the package
 
 git clone https://github.com/dragonee/iterm2-startenv.git
