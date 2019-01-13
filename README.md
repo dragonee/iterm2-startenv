@@ -17,11 +17,13 @@ sudo ln -s `pwd`/startenv /usr/bin/startenv # otherwise
 
 # Creating your first environment
 
-startenv init hello
+cd /Path/to/project/hello
 
-# ...edit ~/.startenv/hello.js
+startenv init
 
-startenv hello
+# ...edit .startenv.js
+
+startenv
 ```
 
 ## Description
@@ -31,16 +33,19 @@ tools that need to run in the background. For example, `npm run watch`
 for your Webpack asset building or starting a development server with
 either PHP, Django, Ruby or any other framework of your choice.
 
-It can be very cumbersome to switch between two projects. On the other
-hand, creating multiple profiles for each particular command leaves us
-with a very full iTerm profile pane. This package addresses this problem
+It can be very cumbersome to switch between multiple projects, which
+happens fairly often if you are reviewing pull requests in several
+projects at once. You could try creating multiple profiles 
+for each particular command but that approach will leave you with a
+bunch of profiles for every project you are in and your iTerm profile
+panel will fill up very quickly. This package addresses this problem
 by managing iTerm via Apple Javascript for Automation.
 
-Simply define such file in your `~/.startenv/myenv.js`:
+Simply go to your project directory and `startenv init`:
 
 ```
 ALLTERMS = [
-    'nvm use 9',
+    'nvm use 10',
 ]
 
 TERMS = [
@@ -48,20 +53,49 @@ TERMS = [
     'php -S localhost:8000 -t public/',
     'npm run watch',
 ]
-
-PATH = '/Users/MYUSERNAME/some/path/to/project'
 ```
 
-and type `startenv myenv`. It will tell iTerm to open three new tabs.
-Each one will:
+and type `startenv`. It will tell iTerm to open three new tabs. Each of
+them will:
 
-- [x] open the `PATH` directory, 
+- [x] open this directory, 
 - [x] execute all lines `ALLTERMS` as terminal commands,
 - [x] execute a line in `TERMS` in each terminal tab (multiple commands if array is passed),
-- [x] switch back to the first tab.
 
 You can also choose a specific iTerm profile with `PROFILE` and name
 your terms with the `title()` function.
+
+What's more, all your `startenv`ed projects are symlinked in
+`~/.startenv`, so you can run the command from any directory whatsoever:
+
+```
+dragonee@lain ~ $ startenv hello
+```
+
+The above command will still open three terminal tabs in your project
+directory.
+
+### `startenv init [NAME]`
+
+Run in project root directory. It will create a `.startenv.js` file for
+you that you need to configure and create a symlink for your
+convenience. The name of this symlink can be specified with NAME
+argument, by default it's the name of the root directory.
+
+### `startenv list`
+
+List currently symlinked (used) projects that you can start with
+`startenv NAME`
+
+### `startenv NAME`
+
+Open a number of terminal tabs with configurable commands. 
+
+### `startenv`
+
+If run in project directory it will look upwards (like Git) for a file
+named `.startenv.js`. If it exists, it will run it and open a number of
+terminal tabs with configurable commands.
 
 ## Examples
 
@@ -70,7 +104,6 @@ your terms with the `title()` function.
 
 ## TODO
 
-- [ ] Expand user name in PATH.
 - [ ] Add package to Homebrew repositories to make installation simple.
 - [ ] Add more examples.
 
