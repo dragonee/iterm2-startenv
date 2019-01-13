@@ -3,7 +3,7 @@
 DIR=$(dirname "$(realpath "$0")")
 HOME_DIR=~/.startenv
 
-STARTENVJS=startenv.js
+STARTENVJS=.startenv.js
 
 # return value
 __=""
@@ -34,14 +34,91 @@ list_command() {
     done
 }
 
-if [ "$1" == "init" ]; then
-    if [ -z "$2" ]; then
-        echo "Error: you need to specify project name as a second argument."
-        exit 1
+link_file_in_home() {
+    local force=0
+
+    while getopts 'f' opt; do
+        case $opt in
+            f) force=1 ;;
+            *) echo 'Error in command line parsing' >&2
+               exit 1
+        esac
+    done
+
+    shift "$(( OPTIND - 1 ))"
+
+    local destination="$1"
+    local project_name="$2"
+
+    # do we need to make a link?
+    if [ "$force" -eq 0 ]; then
+        if [ -f "$HOME_DIR/$project_name.js" ]; then
+            __="$project_name"
+            return 0
+        fi
+
+        for file in "$HOME_DIR"/*; do
+            if [ ! -L "$file" ]; then
+                continue
+            fi
+
+            path=`readlink $file`
+
+            if [ "$path" = "$destination" ]; then
+                __=$(basename "$file" .js)
+
+                echo "Found a link under project name $__."
+                echo "You can use startenv $__ to start the project from anywhere."
+                echo "(startenv init to relink the project)"
+
+                return 0
+            fi
+        done
     fi
 
-    PROJECT_NAME=`basename "$2"`
+    echo "Linking as $HOME_DIR/$project_name.js"
 
+    for file in "$HOME_DIR"/*; do
+        if [ ! -L "$file" ]; then
+            continue
+        fi
+
+        path=`readlink $file`
+        
+        if [ "$path" = "$destination" ]; then
+            rm -f "$file"
+        fi
+    done
+   
+    ln -sf "$destination" "$HOME_DIR/$project_name.js"
+
+    __="$project_name"
+}
+
+# initialize repository
+# if startenv.js file is found in directory, relink path forcefully
+init_command() {
+    INIT_PATH=${1:-`pwd`}
+
+    PROJECT_NAME=${2:-$(basename "$INIT_PATH")}
+
+    STARTENV_PATH="$INIT_PATH/$STARTENVJS"
+
+    if [ ! -f "$STARTENV_PATH" ]; then
+        sed "s/PROJECT_NAME/$PROJECT_NAME/g" "$DIR/examples/fullexample.js" > "$STARTENV_PATH"
+        echo "Created $STARTENV_PATH"
+    else
+        echo "$STARTENVJS file exists, skipping file creation..."
+    fi
+    
+    link_file_in_home -f "$STARTENV_PATH" "$PROJECT_NAME"
+    
+    echo "Make necessary edits in the file and start the environment with:"
+    echo ""
+    echo "startenv (startenv $PROJECT_NAME from anywhere)"
+}
+
+if [ "$1" == "init" ]; then
     if [ $# -gt 2 ]; then
         echo "Warning: extra arguments at the command line."
     fi
@@ -55,13 +132,8 @@ if [ "$1" == "init" ]; then
             exit 1
         fi
     fi
-
-    sed "s/PROJECT_NAME/$PROJECT_NAME/g" "$DIR/examples/fullexample.js" > "$HOME_DIR/$PROJECT_NAME.js"
-
-    echo "Created $HOME_DIR/$PROJECT_NAME.js"
-    echo "Make necessary edits in the file and start the environment with:"
-    echo ""
-    echo "startenv $PROJECT_NAME"
+    
+    init_command "$(pwd)" "$2"
 
     exit 0
 elif [ "$1" == "list" ]; then
@@ -74,7 +146,7 @@ if [ ! -d "$HOME_DIR" ]; then
     echo "The $HOME_DIR directory does not exist."
     echo "To create your first environment, type the following in your terminal:"
     echo ""
-    echo "startenv init PROJECT_NAME"
+    echo "startenv init [PROJECT_NAME]"
     exit 1
 fi
 
@@ -88,33 +160,26 @@ if [ $# -eq 0 ]; then
         list_command "   "
 
         echo "Fatal: did not find $STARTENVJS here (or any of the parent directories)."
+        echo "Did you mean startenv init?"
         exit 1
     fi
 
     SCRIPT="$__"
+    PROJECT_NAME=$(basename `dirname "$SCRIPT"`)
 
-    project_dir=`dirname "$SCRIPT"`
-    PROJECT_NAME=`basename "$project_dir"`
-
-    symlink_target="$HOME_DIR/$PROJECT_NAME.js"
-
-    if [ ! -f "$symlink_target" ]; then
-        echo "Linking as $HOME_DIR/$PROJECT_NAME.js"
-        echo "Next time you will be able to use the following command"
-        echo ""
-        echo "startenv $PROJECT_NAME"
-
-        ln -s "$SCRIPT" "$symlink_target"
-    fi
+    link_file_in_home "$SCRIPT" "$PROJECT_NAME"
 else
     PROJECT_NAME=`basename "$1"`
+    SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
+
+    if [ -L "$SCRIPT" ]; then
+        SCRIPT="$(readlink $SCRIPT)"
+    fi
 fi
 
 if [ $# -gt 2 ]; then
     echo "Warning: extra arguments at the command line."
 fi
-
-SCRIPT="$HOME_DIR/$PROJECT_NAME.js"
 
 if [ ! -f "$SCRIPT" ]; then
     echo "Error: $SCRIPT does not exist. Exiting..."

@@ -38,10 +38,14 @@ var load = function (path) {
 	var PROFILE = null
 	var TERMS = []
     var ALLTERMS = []
-	var PATH = '/'
+	var PATH = null
 	var iTerm = true
 
   	eval(contents)
+
+    if(PATH === null) {
+        PATH = path.substring(0, path.lastIndexOf('/'))
+    }
 
 	return {
   		PROFILE: PROFILE,
