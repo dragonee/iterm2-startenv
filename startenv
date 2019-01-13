@@ -89,8 +89,16 @@ link_file_in_home() {
             rm -f "$file"
         fi
     done
-   
-    ln -sf "$destination" "$HOME_DIR/$project_name.js"
+    
+    if [ -f "$HOME_DIR/$project_name.js" ]; then
+        echo "Error: $HOME_DIR/$project_name.js is not a symlink!"
+        echo "It probably was created manually and will not be overwritten."
+        echo "To fix this behaviour, manually remove this file and rerun the command."
+
+        exit 1
+    fi
+
+    ln -s "$destination" "$HOME_DIR/$project_name.js"
 
     __="$project_name"
 }
