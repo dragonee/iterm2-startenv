@@ -83,4 +83,8 @@ TERMS = [
     ]
 ]
 
+// Change this to the index of the terminal tab
+// you want to be active by default
+ACTIVE_TAB = 0
+
 // vim: set tw=72:

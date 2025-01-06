@@ -35,6 +35,7 @@ var load = function (path) {
         return 'echo -ne "\\033]0;' + title + '\\007"'
     }
 
+    var ACTIVE_TAB = 0
     var PROFILE = null
     var TERMS = []
     var ALLTERMS = []
@@ -48,6 +49,7 @@ var load = function (path) {
     }
 
     return {
+        ACTIVE_TAB: ACTIVE_TAB,
         PROFILE: PROFILE,
         TERMS: TERMS,
         ALLTERMS: ALLTERMS,
@@ -70,7 +72,7 @@ function runIterm(config) {
         win = iTerm.createWindowWithProfile(config.PROFILE)
     }
 
-    firstTab = null
+    selectedTab = null
 
     for(i = 0; i < config.TERMS.length; i++) {
         if(i == 0 && !useTabs) {
@@ -81,8 +83,10 @@ function runIterm(config) {
             tab = win.createTab({withProfile: config.PROFILE})
         }
 
-        if(i == 0) {
-            firstTab = tab
+        // Make sure the first tab is selected
+        // in case the active term is out of range of the TERMS array
+        if(i == 0 || i == config.ACTIVE_TAB) {
+            selectedTab = tab
         }
 
         termlines = config.TERMS[i]
@@ -110,7 +114,7 @@ function runIterm(config) {
         }
     }
 
-    firstTab.select()
+    selectedTab.select()
     iTerm.activate()
 }
 
